@@ -1,10 +1,8 @@
-﻿using System;
-using System.Diagnostics;
-using System.Numerics;
+﻿using System.Numerics;
 
 namespace CSharpFftDemo
 {
-    public class Fft {
+    public sealed class Fft {
         // Internal variables
         private static Complex s_one = Complex.One;
         private static readonly Complex[] phasevec = new[] {
@@ -43,9 +41,24 @@ namespace CSharpFftDemo
         };
 
         // Public function
-        public void Calculate(int Log2FftSize, Complex[] xy_in, Complex[] xy_out)
+        public static void Calculate(
+            int Log2FftSize,
+            Complex[] xy_in,
+            Complex[] xy_out)
         {
-            for (int i = 0; i < (1 << Log2FftSize); i++)
+            // if (xy_in is null)
+            // {
+            //     throw new ArgumentNullException(nameof(xy_in));
+            // }
+
+            // if (xy_out is null)
+            // {
+            //     throw new ArgumentNullException(nameof(xy_out));
+            // }
+
+            var n = 1 << Log2FftSize;
+
+            for (int i = 0; i < n; i++)
             {
                 long brev = i;
 
@@ -56,20 +69,16 @@ namespace CSharpFftDemo
                 brev = (brev >> 16) | (brev << 16);
 
                 brev >>= 32 - Log2FftSize;
-                xy_out[brev] = xy_in[i]; 
+                xy_out[brev] = xy_in[i];
             }
 
-            int n = 1 << Log2FftSize;
             int l2pt = 0;
             int mmax = 1;
 
             while (n > mmax)
             {
                 int istep = mmax << 1;
-
                 var wphase_XY = phasevec[l2pt++];
-
-                // Same.
                 var w_XY = s_one;
 
                 for (int m = 0; m < mmax; m++)
@@ -79,10 +88,10 @@ namespace CSharpFftDemo
                         var tempXY = w_XY * xy_out[i + mmax];
 
                         xy_out[i + mmax] = xy_out[i] - tempXY;
-                        xy_out[i] = xy_out[i] + tempXY;
+                        xy_out[i] += tempXY;
                     }
 
-                    w_XY = w_XY * wphase_XY;
+                    w_XY *= wphase_XY;
                 }
 
                 mmax = istep;

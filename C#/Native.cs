@@ -7,12 +7,12 @@ namespace CSharpFftDemo
     public static class FftNative
     {
         [StructLayout(LayoutKind.Sequential)]
-        public struct FloatComplex
+        public struct DoubleComplex
         {
-            public float Real;
-            public float Imaginary;
+            public double Real;
+            public double Imaginary;
 
-            public FloatComplex(float real, float imaginary)
+            public DoubleComplex(double real, double imaginary)
             {
                 Real = real;
                 Imaginary = imaginary;
@@ -20,25 +20,26 @@ namespace CSharpFftDemo
 
             public override string ToString()
             {
-                return $"(Re: {Real}, Im: {Imaginary}";
+                return $"(Re: {Real}, Im: {Imaginary})";
             }
         }
 
         [DllImport("fft.so")]
-        public static extern void fft(int log2point, [Out] FloatComplex[] xy_out, FloatComplex[] xy_in);
+        public static extern void fft(int log2point, [Out] DoubleComplex[] xy_out, DoubleComplex[] xy_in);
 
         public static void Native(int log2FftSize, int fftRepeat)
         {
             int i;
             int size = 1 << log2FftSize;
-            FloatComplex[] xy = new FloatComplex[size];
-            FloatComplex[] xy_out = new FloatComplex[xy.Length];
+
+            var xy = new DoubleComplex[size];
+            var xy_out = new DoubleComplex[xy.Length];
 
             for (i = 0; i < size / 2; i++)
-                xy[i] = new FloatComplex(1.0f, 0.0f);
+                xy[i] = new DoubleComplex(1.0f, 0.0f);
 
             for (i = size / 2; i < size; i++)
-                xy[i] = new FloatComplex(-1.0f, 0.0f);
+                xy[i] = new DoubleComplex(-1.0f, 0.0f);
 
             var stopwatch = Stopwatch.StartNew();
 
